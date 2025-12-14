@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PRO Ферма</title>
+
+<!-- Leaflet -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+body {
+    margin: 0;
+    font-family: 'Poppins', sans-serif;
+    background: #f5f7fa;
+    color: #333;
+}
+header {
+    background: linear-gradient(90deg,#4CAF50,#2e7d32);
+    color: white;
+    padding: 15px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+header .logo { font-size: 22px; font-weight: bold; }
+nav a {
+    color: white;
+    margin-left: 20px;
+    text-decoration: none;
+    font-weight: 600;
+}
+nav a:hover { text-decoration: underline; }
+
+.container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit,minmax(350px,1fr));
+    gap: 20px;
+    padding: 20px;
+}
+
+.card {
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    padding: 20px;
+}
+h2 { margin-top: 0; color: #2e7d32; }
+
+.kpi-container {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+.kpi {
+    background: #e8f5e9;
+    flex: 1;
+    min-width: 120px;
+    text-align: center;
+    border-radius: 10px;
+    padding: 15px;
+}
+.kpi .value { font-size: 22px; font-weight: bold; }
+
+.animal-card {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    padding: 10px;
+    border: 1px solid #eee;
+    border-radius: 10px;
+    margin-bottom: 10px;
+}
+.animal-card img {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+}
+
+.progress-container {
+    background: #eee;
+    border-radius: 10px;
+    overflow: hidden;
+}
+.progress-bar {
+    height: 12px;
+    background: linear-gradient(90deg,#4CAF50,#81C784);
+}
+
+.status.green { color: #4CAF50; }
+.status.red { color: #FF3D00; }
+
+#map {
+    height: 350px;
+    border-radius: 15px;
+}
+
+.temp-value {
+    font-size: 24px;
+    font-weight: bold;
+    color: #2e7d32;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <div class="logo">🐄  PRO Farm Dashboard</div>
+    <nav>
+        <a href="#kpi">Статистика</a>
+        <a href="#finance">Финансы</a>
+        <a href="#mapsection">GPS</a>
+        <a href="#temperature">Температура</a>
+    </nav>
+</header>
+
+<div class="container">
+
+<div class="card" id="kpi">
+<h2>Общая статистика</h2>
+<div class="kpi-container">
+<div class="kpi">Животные<div class="value" id="totalAnimals">0</div></div>
+<div class="kpi">Здоровые<div class="value" id="healthyAnimals">0</div></div>
+<div class="kpi">Больные<div class="value" id="sickAnimals">0</div></div>
+<div class="kpi">Температура<div class="value" id="avgTemp">0°C</div></div>
+</div>
+<div id="animalList"></div>
+</div>
+
+<div class="card" id="finance">
+<h2>Финансовый отчет</h2>
+<canvas id="financeChart"></canvas>
+</div>
+
+<div class="card" id="mapsection">
+<h2>GPS-метки животных</h2>
+<div id="map"></div>
+</div>
+
+<div class="card" id="temperature">
+<h2>Температура</h2>
+<p>Сейчас: <span id="temp" class="temp-value">20</span> °C</p>
+<canvas id="tempChart"></canvas>
+</div>
+
+</div>
+
+<script>
+const animals = [
+    {name:"Корова 1", health:90, status:"Здорова", coords:[51.1694,71.4491]},
+    {name:"Коза 2", health:50, status:"Болеет", coords:[43.2220,76.8512]},
+    {name:"Курица 3", health:80, status:"Здорова", coords:[53.2194,63.6316]},
+    {name:"Свинья 4", health:70, status:"Здорова", coords:[50.2839,57.1667]}
+];
+
+function updateStats() {
+    document.getElementById('totalAnimals').textContent = animals.length;
+    document.getElementById('healthyAnimals').textContent =
+        animals.filter(a => a.status === "Здорова").length;
+    document.getElementById('sickAnimals').textContent =
+        animals.filter(a => a.status !== "Здорова").length;
+}
+
+updateStats();
+
+// Finance chart
+new Chart(document.getElementById('financeChart'), {
+    type: 'bar',
+    data: {
+        labels: ['Янв','Фев','Мар','Апр','Май','Июн'],
+        datasets: [
+            {label:'Доход', data:[120,135,110,150,140,160], backgroundColor:'#4CAF50'},
+            {label:'Расход', data:[70,80,60,90,85,95], backgroundColor:'#FF3D00'}
+        ]
+    }
+});
+
+// Map
+const map = L.map('map').setView([48.0196,66.9237],5);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+
+animals.forEach(a => {
+    L.marker(a.coords)
+        .addTo(map)
+        .bindPopup(`<strong>${a.name}</strong><br>${a.status}`);
+});
+</script>
+
+</body>
+</html>
